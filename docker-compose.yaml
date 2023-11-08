@@ -7,8 +7,8 @@ services:
     ports:
       - 27017:27017
     envrironment:
-      - MONGO_INITDB_ROOT_USERNAME:
-      - MONGO_INITDB_ROOT_PASSWORD:
+      MONGO_INITDB_ROOT_USERNAME:
+      MONGO_INITDB_ROOT_PASSWORD:
 
 
   mongo-express:
