@@ -15,7 +15,7 @@ import pyrogram
 from pyrogram import __version__ as pyrover
 from pyrogram import filters, idle
 from pyrogram.errors import FloodWait
-from pyrogram.types import Message
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 import config
 import mongo
@@ -32,7 +32,41 @@ app = pyrogram.Client(
 )
 
 save = {}
+save_sender_msg_id = {}
 grouplist = 1
+
+my_keyboard = InlineKeyboardMarkup(
+    [
+        [  # First row
+            InlineKeyboardButton(  # Generates a callback query when pressed
+                text          = "Publish",
+                callback_data = "publish"
+            )
+        ],
+        [  # second row
+            InlineKeyboardButton(  # Generates a callback query when pressed
+                text          = "Publish as #sugg",
+                callback_data = "publish_as_sugg"
+            )
+        ],
+        [  # third row
+            InlineKeyboardButton(  # Generates a callback query when pressed
+                text          = "Publish as #sugg #classic",
+                callback_data = "publish_as_sugg_class"
+            )
+        ],
+        [  # fourth row
+            InlineKeyboardButton(  # Generates a callback query when pressed
+                text          = "Deny",
+                callback_data = "deny"
+            )
+        ]
+    ]
+)
+
+callback_caption_dict = {"publish"              :"",
+                         "publish_as_sugg"      :"#предложка",
+                         "publish_as_sugg_class":"#предложка #классика"}
 
 
 async def init():
@@ -215,6 +249,8 @@ async def init():
 
     @app.on_message(filters.private & ~filters.edited)
     async def incoming_private(_, message):
+        print("[LOG] - incoming_private function: ", message.text, 
+              message.message_id, message.from_user.id)
         user_id = message.from_user.id
         if await mongo.is_banned_user(user_id):
             return
@@ -242,7 +278,7 @@ async def init():
                     return await app.copy_message(
                         replied_user_id,
                         message.chat.id,
-                        message.message_id,
+                        message.message_id
                     )
                 except Exception as e:
                     print(e)
@@ -255,7 +291,7 @@ async def init():
                     forwarded = await app.forward_messages(
                         config.LOG_GROUP_ID,
                         message.chat.id,
-                        message.message_id,
+                        message.message_id, reply_markup=my_keyboard
                     )
                     save[forwarded.message_id] = user_id
                 except:
@@ -263,10 +299,27 @@ async def init():
             else:
                 for user in SUDO_USERS:
                     try:
+                        print("[LOG] - forwarding message", message.message_id, message.from_user.id)
                         forwarded = await app.forward_messages(
                             user, message.chat.id, message.message_id
                         )
                         save[forwarded.message_id] = user_id
+
+                        await message.reply_text("Спасибо за предложенный мем) Скоро админы его обязательно опубликуют.", 
+                                                quote=True)
+
+                        # await app.send_message(
+                        #     chat_id             = forwarded.chat.id, 
+                        #     text                = f"What shoud I do? msg_id={message.message_id}",
+                        #     reply_to_message_id = forwarded.message_id, 
+                        #     reply_markup        = my_keyboard
+                        # )
+                        await app.send_message(
+                            chat_id             = forwarded.chat.id, 
+                            text                = message.message_id,
+                            reply_to_message_id = forwarded.message_id, 
+                            reply_markup        = my_keyboard
+                        )
                     except:
                         pass
 
@@ -275,9 +328,10 @@ async def init():
         group=grouplist,
     )
     async def incoming_groups(_, message):
+        print("[LOG] - incoming_groups function: ", message)
         if message.reply_to_message:
             if (
-                message.text == "/unblock"
+                message.text    == "/unblock"
                 or message.text == "/block"
                 or message.text == "/broadcast"
             ):
@@ -295,6 +349,7 @@ async def init():
                     "Failed to fetch user. You might've restarted bot or some error happened. Please check logs"
                 )
             try:
+                print("[LOG] - app.copy_message()")
                 return await app.copy_message(
                     replied_user_id,
                     message.chat.id,
@@ -305,6 +360,46 @@ async def init():
                 return await message.reply_text(
                     "Failed to send the message, User might have blocked the bot or something wrong happened. Please check logs"
                 )
+
+    @app.on_callback_query(filters.user(SUDO_USERS))
+    async def publish_suggestion(_, callback_query):
+        print("Buttons publish_suggestion callback activated for: ", callback_query.data)
+        caption_str   = ""
+        callback_strs = callback_query.data.split("_")
+
+        msg_with_keys    = callback_query.message
+        sender_user      = await app.get_users(msg_with_keys.reply_to_message.forward_sender_name)
+        msg_id_of_sender = int(msg_with_keys.text)
+
+        print("text from reply: ", msg_with_keys.text)
+
+        if callback_strs[0] == "publish":
+            caption_str = callback_caption_dict[callback_query.data]
+            
+            await app.copy_message(config.TARGET_CHANNEL, msg_with_keys.chat.id, 
+                                        msg_with_keys.reply_to_message_id, caption_str)
+            
+            await app.send_message(
+                            chat_id = msg_with_keys.chat.id, 
+                            text    = callback_query.data,
+                            reply_to_message_id = msg_with_keys.reply_to_message_id)
+            
+            await app.send_message(chat_id = sender_user.id,
+                                reply_to_message_id = msg_id_of_sender,
+                                text = "Ура! Твой мем опубликован!")
+
+        elif callback_strs[0] == "deny":
+            await app.send_message(
+                            chat_id = msg_with_keys.chat.id, 
+                            text    = "Denied to publish",
+                            reply_to_message_id = msg_with_keys.reply_to_message_id)
+
+            await app.send_message(chat_id = sender_user.id,
+                                reply_to_message_id = msg_id_of_sender,
+                                text = "Прости, но мы не можем опубликовать твой пост(")
+        else:
+            pass
+
 
     print("[LOG] - Yukki Chat Bot Started")
     await idle()

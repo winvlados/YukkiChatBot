@@ -4,33 +4,23 @@ services:
   db:
     image: mongo
     restart: always
-    ports:
-      - 27017:27017
-    envrironment:
-      MONGO_INITDB_ROOT_USERNAME:
-      MONGO_INITDB_ROOT_PASSWORD:
-
-
-  mongo-express:
-    image: mongo-express
-    restart: always
-    ports:
-      - 8081:8081
     environment:
-      #creds must be same as in db above
-      ME_CONFIG_MONGODB_ADMINUSERNAME:
-      ME_CONFIG_MONGODB_ADMINPASSWORD:
-      ME_CONFIG_MONGODB_URL: mongodb://<username>:<password>@mongo:27017/
+      MONGO_INITDB_ROOT_USERNAME: pankratov
+      MONGO_INITDB_ROOT_PASSWORD: 35a72s42d
+    logging:
+      driver: none
 
   bot:
     build: .
-    environement:
-      API_ID: ""
-      API_HASH: ""
-      BOT_TOKEN: ""
-      PRIVATE_START_MESSAGE: ""
-      SUDO_USER: ""
-      LOG_GROUP_ID: ""
-      MONGO_DB_URI: mongodb://<non-root-user>:<password>@mongo:27017/
+    environment:
+      API_ID: 27305083
+      API_HASH: 7ac17472404c8ae648de28306a1fe88f
+      BOT_TOKEN: 6825618719:AAHvik3p_b4sK0Ed_HkbV4m4-yAS7OcgEGY
+      # BOT_TOKEN: 6747509601:AAF1POwSXK8rvGpJOjD8PJ-yOHTvqhER11A
+      PRIVATE_START_MESSAGE: Привет! Это бот-предложка Пива и Приколов. Скидывай сюда мем и его скоро опубликуют!
+      SUDO_USER: 115166047
+      TARGET_CHANNEL: 115166047
+      LOG_GROUP_ID : 115166047
+      MONGO_DB_URI: mongodb://pankratov:35a72s42d@db:27017/
     depends_on:
       - db

@@ -22,6 +22,9 @@ SUDO_USER = list(
     map(int, getenv("SUDO_USER", "").split())
 )  # Input type must be interger
 
+# TARGET CHANNEL TO PUBLISH
+TARGET_CHANNEL = getenv("TARGET_CHANNEL")
+
 # You'll need a Private Group ID for this.
 LOG_GROUP_ID = int(getenv("LOG_GROUP_ID"))
 

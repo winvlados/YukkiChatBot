@@ -1,0 +1,25 @@
+version: '3.3'
+
+services:
+  db:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: pass
+    logging:
+      driver: none
+
+  bot:
+    build: .
+    environment:
+      API_ID: 
+      API_HASH: 
+      BOT_TOKEN: 
+      PRIVATE_START_MESSAGE: Hi! This is a chat-bot!
+      SUDO_USER: 
+      TARGET_CHANNEL: 
+      LOG_GROUP_ID : 
+      MONGO_DB_URI: mongodb://user:pass@db:27017/
+    depends_on:
+      - db
