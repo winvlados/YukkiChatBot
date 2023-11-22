@@ -368,7 +368,15 @@ async def init():
         callback_strs = callback_query.data.split("_")
 
         msg_with_keys    = callback_query.message
-        sender_user      = await app.get_users(msg_with_keys.reply_to_message.forward_sender_name)
+        
+        sender_user = msg_with_keys.reply_to_message.forward_from
+        if sender_user == None:
+            try: 
+                sender_user  = await app.get_users(msg_with_keys.reply_to_message.forward_sender_name)
+            except Exception as e:
+                print(e)
+                sender_user = SUDO_USERS[0]
+
         msg_id_of_sender = int(msg_with_keys.text)
 
         print("text from reply: ", msg_with_keys.text)
