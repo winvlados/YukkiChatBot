@@ -308,15 +308,10 @@ async def init():
                         await message.reply_text("Спасибо за предложенный мем) Скоро админы его обязательно опубликуют.", 
                                                 quote=True)
 
-                        # await app.send_message(
-                        #     chat_id             = forwarded.chat.id, 
-                        #     text                = f"What shoud I do? msg_id={message.message_id}",
-                        #     reply_to_message_id = forwarded.message_id, 
-                        #     reply_markup        = my_keyboard
-                        # )
                         await app.send_message(
                             chat_id             = forwarded.chat.id, 
                             text                = message.message_id,
+                            #     text                = f"What shoud I do? msg_id={message.message_id}",
                             reply_to_message_id = forwarded.message_id, 
                             reply_markup        = my_keyboard
                         )
@@ -368,7 +363,7 @@ async def init():
         callback_strs = callback_query.data.split("_")
 
         msg_with_keys    = callback_query.message
-        
+
         sender_user = msg_with_keys.reply_to_message.forward_from
         if sender_user == None:
             try: 
