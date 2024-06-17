@@ -247,7 +247,7 @@ async def init():
         except:
             pass
 
-    @app.on_message(filters.private & ~filters.edited)
+    @app.on_message(filters.private)
     async def incoming_private(_, message):
         print("[LOG] - incoming_private function: ", message.text, 
               message.message_id, message.from_user.id)
@@ -311,17 +311,13 @@ async def init():
                         await app.send_message(
                             chat_id             = forwarded.chat.id, 
                             text                = message.message_id,
-                            #     text                = f"What shoud I do? msg_id={message.message_id}",
                             reply_to_message_id = forwarded.message_id, 
                             reply_markup        = my_keyboard
                         )
                     except:
                         pass
 
-    @app.on_message(
-        filters.group & ~filters.edited & filters.user(SUDO_USERS),
-        group=grouplist,
-    )
+    @app.on_message(filters.group & filters.user(SUDO_USERS),group=grouplist)
     async def incoming_groups(_, message):
         print("[LOG] - incoming_groups function: ", message)
         if message.reply_to_message:
