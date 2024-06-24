@@ -310,11 +310,12 @@ async def init():
 
                         await app.send_message(
                             chat_id             = forwarded.chat.id, 
-                            text                = message.id,
-                            reply_to_id         = forwarded.id, 
+                            text                = str(message.id),
+                            reply_to_message_id = forwarded.id, 
                             reply_markup        = my_keyboard
                         )
-                    except:
+                    except Exception as e:
+                        print("[LOG] - can't send message", e, forwarded.chat.id,message.id,forwarded.id)
                         pass
 
     @app.on_message(filters.group & filters.user(SUDO_USERS),group=grouplist)
