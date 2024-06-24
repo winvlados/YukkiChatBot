@@ -211,7 +211,7 @@ async def init():
                 "MONGO_DB_URI var not defined. Please define it first"
             )
         if message.reply_to_message:
-            x = message.reply_to_message.message_id
+            x = message.reply_to_message.id
             y = message.chat.id
         else:
             if len(message.command) < 2:
@@ -250,7 +250,7 @@ async def init():
     @app.on_message(filters.private)
     async def incoming_private(_, message):
         print("[LOG] - incoming_private function: ", message.text, 
-              message.message_id, message.from_user.id)
+              message.id, message.from_user.id)
         user_id = message.from_user.id
         if await mongo.is_banned_user(user_id):
             return
@@ -278,7 +278,7 @@ async def init():
                     return await app.copy_message(
                         replied_user_id,
                         message.chat.id,
-                        message.message_id
+                        message.id
                     )
                 except Exception as e:
                     print(e)
@@ -291,27 +291,27 @@ async def init():
                     forwarded = await app.forward_messages(
                         config.LOG_GROUP_ID,
                         message.chat.id,
-                        message.message_id, reply_markup=my_keyboard
+                        message.id, reply_markup=my_keyboard
                     )
-                    save[forwarded.message_id] = user_id
+                    save[forwarded.id] = user_id
                 except:
                     pass
             else:
                 for user in SUDO_USERS:
                     try:
-                        print("[LOG] - forwarding message", message.message_id, message.from_user.id)
+                        print("[LOG] - forwarding message", message.id, message.from_user.id)
                         forwarded = await app.forward_messages(
-                            user, message.chat.id, message.message_id
+                            user, message.chat.id, message.id
                         )
-                        save[forwarded.message_id] = user_id
+                        save[forwarded.id] = user_id
 
                         await message.reply_text("Спасибо за предложенный мем) Скоро админы его обязательно опубликуют.", 
                                                 quote=True)
 
                         await app.send_message(
                             chat_id             = forwarded.chat.id, 
-                            text                = message.message_id,
-                            reply_to_message_id = forwarded.message_id, 
+                            text                = message.id,
+                            reply_to_id         = forwarded.id, 
                             reply_markup        = my_keyboard
                         )
                     except:
@@ -327,7 +327,7 @@ async def init():
                 or message.text == "/broadcast"
             ):
                 return
-            replied_id = message.reply_to_message_id
+            replied_id = message.reply_to_id
             if not message.reply_to_message.forward_sender_name:
                 return await message.reply_text(
                     "Please reply to forwarded messages only."
@@ -344,7 +344,7 @@ async def init():
                 return await app.copy_message(
                     replied_user_id,
                     message.chat.id,
-                    message.message_id,
+                    message.id,
                 )
             except Exception as e:
                 print(e)
